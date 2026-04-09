@@ -2,6 +2,7 @@ using EmployeeManagment.Data;
 using EmployeeManagment.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.InMemory;
+using Scalar.AspNetCore;
 namespace EmployeeManagment
 {
     public class Program
@@ -27,11 +28,26 @@ namespace EmployeeManagment
 
             builder.Services.AddControllers();
 
-            var app = builder.Build();
+            builder.Services.AddOpenApi();
 
+            var app = builder.Build();
+            if (app.Environment.IsDevelopment())
+            {
+                app.MapOpenApi();
+                app.UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/openapi/v1.json", "OpenApi V1");
+                    options.RoutePrefix = string.Empty;
+                });
+                app.UseReDoc(options =>
+                {
+                    options.SpecUrl("openapi/v1.json");
+                });
+                app.MapScalarApiReference();
+            }
             app.UseCors("MyCors");
 
-            app.MapGet("/", () => "Hello World!");
+            app.MapControllers();
 
             app.Run();
         }
